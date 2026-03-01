@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дмитрий Менделеев: Научный Код</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fdfbf7;
+            --card-bg: #ffffff;
+            --accent-blue: #b8d0d1;
+            --accent-clay: #d9b9a1;
+            --text: #3e4c54;
+            --shadow: 0 12px 40px rgba(0,0,0,0.04);
+            --transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Улучшенные всплывающие подсказки */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 2px dotted var(--accent-clay);
+            cursor: help;
+            color: #2c363c;
+            font-weight: 600;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 350px; 
+            background-color: #ffffff;
+            color: var(--text);
+            text-align: left;
+            border-radius: 15px;
+            padding: 20px;
+            position: absolute;
+            z-index: 100;
+            bottom: 130%; 
+            left: 50%;
+            margin-left: -175px;
+            opacity: 0;
+            transition: all 0.4s ease;
+            box-shadow: 0 15px 45px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+            font-weight: 400;
+            line-height: 1.5;
+            border: 1px solid var(--accent-blue);
+            pointer-events: none;
+        }
+
+        .tooltip .tooltiptext strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c363c;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--accent-blue);
+            padding-bottom: 5px;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -10px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: #ffffff transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            bottom: 110%;
+        }
+
+        /* Базовые стили */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        nav {
+            position: fixed;
+            top: 0; width: 100%;
+            background: rgba(253, 251, 247, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 1rem 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            margin-left: 25px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+        }
+
+        nav a:hover { color: var(--accent-clay); }
+
+        header {
+            padding: 180px 10% 100px;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            line-height: 1.1;
+            margin-bottom: 25px;
+        }
+
+        .lead {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        section {
+            padding: 60px 10%;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 60px;
+            box-shadow: var(--shadow);
+            margin-bottom: 60px;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 60px;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: var(--transition);
+        }
+
+        .content-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .text-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            color: #2c363c;
+        }
+
+        .fact-list {
+            list-style: none;
+            border-left: 3px solid var(--accent-blue);
+            padding-left: 25px;
+            margin: 30px 0;
+        }
+
+        .fact-list li { margin-bottom: 15px; font-size: 0.95rem; font-weight: 500; }
+
+        .media-link {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            display: block;
+            aspect-ratio: 4/5;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.12);
+        }
+
+        .media-link img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 1.2s ease;
+        }
+
+        .media-link::after {
+            content: 'ВИДЕОМАТЕРИАЛ';
+            position: absolute; inset: 0;
+            background: rgba(62, 76, 84, 0.5);
+            color: white; font-weight: 600;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: var(--transition);
+            letter-spacing: 3px;
+        }
+
+        .media-link:hover img { transform: scale(1.05); }
+        .media-link:hover::after { opacity: 1; }
+
+        @media (max-width: 1024px) {
+            .content-card { grid-template-columns: 1fr; padding: 40px; gap: 40px; }
+            .media-link { aspect-ratio: 16/9; }
+            .tooltip .tooltiptext { width: 280px; margin-left: -140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div style="font-family: 'Playfair Display'; font-weight: 700; font-size: 1.2rem;">МЕНДЕЛЕЕВ</div>
+        <div class="links">
+            <a href="#bio">Путь</a>
+            <a href="#table">Закон</a>
+            <a href="#science">Наследие</a>
+        </div>
+    </nav>
+
+    <header id="top">
+        <h1>Математика химической гармонии</h1>
+        <p class="lead">От Тобольской гимназии до мировой славы: как один человек систематизировал строительные блоки Вселенной и заложил фундамент современной индустрии.</p>
+    </header>
+
+    <section id="bio">
+        <div class="content-card visible">
+            <div class="text-content">
+                <h2>Интеллектуальный фундамент</h2>
+                <p>Дмитрий Менделеев был 17-м ребенком в семье директора гимназии. В 1849 году его мать совершила подвиг, проехав тысячи километров на лошадях, чтобы устроить талантливого сына в университет Петербурга. Это упорство стало основой его характера.</p>
+                <ul class="fact-list">
+                    <li><strong>Универсальность:</strong> Из 431 опубликованной работы только 40 посвящены химии. Остальные — физике, метеорологии и экономике.</li>
+                    <li><strong>Точность:</strong> Его диссертация «О соединении спирта с водой» не о водке, а о физико-химической теории растворов (сжатии объема при смешивании).</li>
+                    <li><strong>Промышленность:</strong> Менделеев был идеологом 
+                        <span class="tooltip">химизации экономики
+                            <span class="tooltiptext">
+                                <strong>Индустриальный рывок</strong>
+                                Он настаивал на том, что Россия должна экспортировать не сырую нефть или зерно, а продукты их глубокой переработки, создавая высокую добавленную стоимость внутри страны.
+                            </span>
+                        </span> России.
+                    </li>
+                </ul>
+            </div>
+            <a href="https://www.youtube.com/watch?v=aQWNK--Snag" target="_blank" class="media-link">
+                <img src="https://idemvmuzei.ru/storage/person/e4/d8/42/96/53/e9/0f/8a/mendeleev.jpg.thumb348.jpg" alt="Дмитрий Менделеев">
+            </a>
+        </div>
+    </section>
+
+    <section id="table">
+        <div class="content-card visible" style="direction: rtl; background-color: #f8fafd;">
+            <div class="text-content" style="direction: ltr;">
+                <h2>Периодический закон</h2>
+                <p>В 1869 году Менделеев совершил прорыв: он понял, что свойства элементов — это не случайный набор данных, а периодическая функция их веса (позже — 
+                    <span class="tooltip">заряда ядра
+                        <span class="tooltiptext">
+                            <strong>Физический смысл</strong>
+                            Современная наука подтвердила: положение элемента определяется числом протонов. Это число диктует структуру электронных оболочек и все химические реакции.
+                        </span>
+                    </span>).
+                </p>
+                
+                <div style="background: white; padding: 30px; border-radius: 20px; margin: 25px 0; border: 1px solid #eee;">
+                    <p style="font-weight: 700; margin-bottom: 15px;">Структурные единицы:</p>
+                    <ul class="fact-list" style="border-left-color: var(--accent-clay); margin: 0;">
+                        <li>
+                            <span class="tooltip">Периоды
+                                <span class="tooltiptext">
+                                    <strong>Динамика свойств</strong>
+                                    В каждом периоде (строке) металлические свойства (способность отдавать электроны) закономерно ослабевают слева направо, сменяясь неметаллическими.
+                                </span>
+                            </span>: Отражают количество квантовых уровней электронов.
+                        </li>
+                        <li>
+                            <span class="tooltip">Группы
+                                <span class="tooltiptext">
+                                    <strong>Химическое родство</strong>
+                                    Вертикальные столбцы объединяют элементы с одинаковой конфигурацией валентных электронов, что объясняет их схожее поведение в реакциях.
+                                </span>
+                            </span>: Определяют высшую валентность элементов.
+                        </li>
+                    </ul>
+                </div>
+
+                <p>Уникальность таблицы Менделеева в её <strong>прогностической силе</strong>. Он не просто систематизировал известное, но и оставил «окна» для будущих открытий.
+                    <span class="tooltip">Предсказания
+                        <span class="tooltiptext">
+                            <strong>Триумф теории</strong>
+                            Он описал плотность, температуру плавления и атомный вес Галлия, Скандия и Германия за десятилетия до того, как их увидели в лабораториях мира.
+                        </span>
+                    </span> сбылись с точностью до десятых долей.
+                </p>
+            </div>
+            <a href="https://www.youtube.com/watch?v=EFIWdLnsz_4" target="_blank" class="media-link">
+                <img src="https://media.istockphoto.com/id/877767332/ru/%D0%B2%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%BD%D0%B0%D1%8F/%D0%B1%D0%B5%D0%BB%D0%B0%D1%8F-%D1%85%D0%B8%D0%BC%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F-%D0%BF%D0%B5%D1%80%D0%B8%D0%BE%D0%B4%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B0%D1%8F-%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%D0%B0-%D1%8D%D0%BB%D0%B5%D0%BC%D0%B5%D0%BD%D1%82%D0%BE%D0%B2-%D0%BD%D0%B0-%D1%87%D0%B5%D1%80%D0%BD%D0%BE%D0%B9-%D1%88%D0%BA%D0%BE%D0%BB%D1%8C%D0%BD%D0%BE%D0%B9-%D0%B4%D0%BE%D1%81%D0%BA%D0%B5-%D1%81-%D1%82%D0%B5%D0%BA%D1%81%D1%82%D1%83%D1%80%D0%BE%D0%B9.jpg?s=612x612&w=0&k=20&c=UV9ImVRqoUY1eAuu5V7nviIWLhGcYQTdjMnTCulUvyk=" alt="Периодическая таблица">
+            </a>
+        </div>
+    </section>
+
+    <section id="science">
+        <div class="content-card visible">
+            <div class="text-content">
+                <h2>Инженер и визионер</h2>
+                <p>Менделеев верил в технический прогресс как инструмент свободы. Он лично проектировал цистерны для перевозки нефти и заложил основы российской 
+                    <span class="tooltip">метрологии
+                        <span class="tooltiptext">
+                            <strong>Стандартизация</strong>
+                            Под руководством Менделеева были созданы государственные эталоны фунта и аршина, что позволило российской промышленности работать по единым чертежам.
+                        </span>
+                    </span>.
+                </p>
+                <ul class="fact-list">
+                    <li><strong>Нефть:</strong> Доказал, что нефть — это ценнейшее сырье для химии, а не просто топливо. Разработал дробную перегонку.</li>
+                    <li><strong>Порох:</strong> Создал «пироколлодий» — бездымный порох, превосходивший зарубежные аналоги по стабильности.</li>
+                    <li><strong>Ледоколы:</strong> Участвовал в создании «Ермака», обосновав теорию освоения Арктики для экономики России.</li>
+                </ul>
+                <p>В 1887 году ученый доказал свою храбрость, совершив полет на воздушном шаре для 
+                    <span class="tooltip">изучения затмения
+                        <span class="tooltiptext">
+                            <strong>Научный риск</strong>
+                            Из-за дождя шар не мог подняться с помощником. 53-летний Менделеев высадил пилота, самостоятельно разобрался в управлении и поднялся выше облаков, чтобы зафиксировать солнечную корону.
+                        </span>
+                    </span> в одиночку.
+                </p>
+            </div>
+            <a href="https://www.youtube.com/watch?v=W0nWz63ko2s" target="_blank" class="media-link">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/DIMendeleevCab.jpg/330px-DIMendeleevCab.jpg" alt="Лаборатория">
+            </a>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 80px 0; background: white; border-top: 1px solid #eee;">
+        <p style="font-size: 0.85rem; letter-spacing: 2px; color: #999; text-transform: uppercase;">&copy; 2026 Марченко Артём и Каралинская Татьяна</p>
+        <p style="margin-top: 10px; font-size: 0.7rem; color: #ccc;">Исторический проект</p>
+        <a href="#top" style="display: inline-block; margin-top: 30px; text-decoration: none; color: var(--accent-clay); font-size: 2rem; transition: 0.3s;">↑</a>
+    </footer>
+
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.content-card').forEach(card => observer.observe(card));
+    </script>
+</body>
+</html>
